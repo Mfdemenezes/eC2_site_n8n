@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # Nginx para servir a página bio
+  nginx:
+    image: nginx:alpine
+    container_name: bio-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/html:/usr/share/nginx/html:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    restart: unless-stopped
+    environment:
+      - NGINX_HOST=meu-dominio.com
+      - NGINX_PORT=80
+    networks:
+      - app-network
+
+  # N8N para automações
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n-automation
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./n8n-data:/home/node/.n8n
+    environment:
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://SEU-IP:5678/
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Watchtower para auto-updates dos containers
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=3600
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  n8n-data:
+  nginx-html:
