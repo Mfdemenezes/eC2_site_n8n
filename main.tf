@@ -4,14 +4,14 @@
 
 terraform {
   required_version = ">= 1.0"
-  
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
   }
-  
+
   # Backend S3 será configurado depois que o bucket for criado
   # backend "s3" {
   #   bucket         = "mfdemenezes-terraform-bucket"
@@ -27,7 +27,7 @@ terraform {
 # ===============================================
 provider "aws" {
   region = var.aws_region
-  
+
   default_tags {
     tags = {
       Project     = "N8N-Nginx-Infrastructure"
@@ -48,12 +48,12 @@ data "aws_availability_zones" "available" {
 data "aws_ami" "amazon_linux" {
   most_recent = true
   owners      = ["amazon"]
-  
+
   filter {
     name   = "name"
     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
-  
+
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
@@ -67,7 +67,7 @@ resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
-  
+
   tags = {
     Name = "${var.project_name}-vpc"
   }
@@ -75,7 +75,7 @@ resource "aws_vpc" "main" {
 
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
-  
+
   tags = {
     Name = "${var.project_name}-igw"
   }
@@ -86,7 +86,7 @@ resource "aws_subnet" "public" {
   cidr_block              = var.public_subnet_cidr
   availability_zone       = data.aws_availability_zones.available.names[0]
   map_public_ip_on_launch = true
-  
+
   tags = {
     Name = "${var.project_name}-public-subnet"
   }
@@ -94,12 +94,12 @@ resource "aws_subnet" "public" {
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
-  
+
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.main.id
   }
-  
+
   tags = {
     Name = "${var.project_name}-public-rt"
   }
@@ -117,7 +117,7 @@ resource "aws_security_group" "web" {
   name_prefix = "${var.project_name}-web-"
   vpc_id      = aws_vpc.main.id
   description = "Security group for web server"
-  
+
   # HTTP
   ingress {
     from_port   = 80
@@ -126,7 +126,7 @@ resource "aws_security_group" "web" {
     cidr_blocks = ["0.0.0.0/0"]
     description = "HTTP"
   }
-  
+
   # HTTPS
   ingress {
     from_port   = 443
@@ -135,7 +135,7 @@ resource "aws_security_group" "web" {
     cidr_blocks = ["0.0.0.0/0"]
     description = "HTTPS"
   }
-  
+
   # N8N
   ingress {
     from_port   = 5678
@@ -144,7 +144,7 @@ resource "aws_security_group" "web" {
     cidr_blocks = ["0.0.0.0/0"]
     description = "N8N"
   }
-  
+
   # Website on port 8080 (for Cloudflare)
   ingress {
     from_port   = 8080
@@ -153,7 +153,7 @@ resource "aws_security_group" "web" {
     cidr_blocks = ["0.0.0.0/0"]
     description = "Website on port 8080"
   }
-  
+
   # SSH (apenas se necessário)
   ingress {
     from_port   = 22
@@ -162,7 +162,7 @@ resource "aws_security_group" "web" {
     cidr_blocks = [var.ssh_cidr]
     description = "SSH"
   }
-  
+
   # Outbound
   egress {
     from_port   = 0
@@ -171,7 +171,7 @@ resource "aws_security_group" "web" {
     cidr_blocks = ["0.0.0.0/0"]
     description = "All outbound"
   }
-  
+
   tags = {
     Name = "${var.project_name}-web-sg"
   }
@@ -182,7 +182,7 @@ resource "aws_security_group" "web" {
 # ===============================================
 resource "aws_iam_role" "ec2_role" {
   name = "${var.project_name}-ec2-role"
-  
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -217,7 +217,7 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 # ===============================================
 resource "aws_s3_bucket" "website" {
   bucket = var.s3_bucket_name
-  
+
   tags = {
     Name = "${var.project_name}-bucket"
   }
@@ -232,7 +232,7 @@ resource "aws_s3_bucket_versioning" "website" {
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "website" {
   bucket = aws_s3_bucket.website.id
-  
+
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
@@ -250,17 +250,17 @@ resource "aws_instance" "web" {
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.web.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
-  
+
   user_data = base64encode(templatefile("${path.module}/user_data.sh", {
     s3_bucket = var.s3_bucket_name
   }))
-  
+
   root_block_device {
     volume_type = "gp3"
     volume_size = 20
     encrypted   = true
   }
-  
+
   tags = {
     Name = "${var.project_name}-web-server"
   }
@@ -272,10 +272,10 @@ resource "aws_instance" "web" {
 resource "aws_eip" "web" {
   instance = aws_instance.web.id
   domain   = "vpc"
-  
+
   tags = {
     Name = "${var.project_name}-eip"
   }
-  
+
   depends_on = [aws_internet_gateway.main]
 }
