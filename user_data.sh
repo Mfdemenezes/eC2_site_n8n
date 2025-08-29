@@ -33,10 +33,21 @@ mkdir -p ./n8n-data
 # Download website files from S3
 aws s3 sync s3://mfdemenezes-terraform-bucket/website/ ./nginx/html/ || echo "Website files não encontrados"
 
+# Make SSL script executable
+chmod +x ./generate-ssl.sh 2>/dev/null || echo "SSL script not found"
+
 # Set permissions
 chown -R ec2-user:ec2-user /home/ec2-user/app
 
-# Start containers (if docker-compose.yml exists)
+# Fix Docker permissions - restart Docker service after adding user to group
+systemctl restart docker
+sleep 5
+
+# Start containers with proper permissions (run as ec2-user)
 if [ -f docker-compose.yml ]; then
-    docker-compose up -d
+    # Run docker-compose as ec2-user with proper group permissions
+    sudo -u ec2-user sg docker -c "docker-compose up -d"
 fi
+
+# Log the setup completion
+echo "$(date): Docker setup completed" >> /var/log/cloud-init-output.log

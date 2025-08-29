@@ -1,120 +1,539 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!doctype html>
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marcelo Menezes - DevOps Engineer</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Marcelo Ferreira de Menezes — MBAM | Site Profissional</title>
+  <meta name="description" content="Site profissional de Marcelo Ferreira de Menezes (MBAM): Cloud Computing (AWS), Agro Sustentável, Consultoria e Gestão." />
+  <meta name="theme-color" content="#0F172A" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Marcelo Ferreira de Menezes — MBAM" />
+  <meta property="og:description" content="Cloud (AWS) + Agro Sustentável. Consultoria, tecnologia e resultados." />
+  <meta property="og:image" content="/assets/og-cover.jpg" />
+  <meta property="og:url" content="https://mfdemenezes.mbam.com.br/" />
+
+  <!-- SEO extras -->
+  <link rel="canonical" href="https://mfdemenezes.mbam.com.br/" />
+  <meta name="robots" content="index,follow" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0b1020;
+      --bg-2:#0f172a;
+      --txt:#e5e7eb;
+      --muted:#9ca3af;
+      --brand:#1d4ed8;
+      --brand-2:#60a5fa;
+      --card:#111827;
+      --stroke:#1f2937;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:linear-gradient(180deg,var(--bg) 0%, var(--bg-2) 100%);
+      color:var(--txt);
+    }
+    a{color:var(--brand); text-decoration:none}
+    a:hover{color:var(--brand-2)}
+    .container{max-width:1120px; margin:0 auto; padding:0 20px}
+    .btn{display:inline-flex; align-items:center; gap:10px; background:var(--brand); color:#fff; padding:12px 18px; border-radius:14px; font-weight:600; border:1px solid transparent; transition:.25s; cursor:pointer}
+    .btn:hover{background:transparent; border-color:var(--brand); color:var(--brand-2)}
+    .btn.outline{background:transparent; border:1px solid var(--stroke); color:var(--txt)}
+    .badge{display:inline-block; padding:6px 10px; border:1px solid var(--stroke); border-radius:999px; color:var(--muted); font-size:12px; letter-spacing:.2px}
+    header{position:sticky; top:0; z-index:40; backdrop-filter:saturate(180%) blur(10px); background:rgba(11,16,32,.6); border-bottom:1px solid var(--stroke)}
+    nav{display:flex; align-items:center; justify-content:space-between; height:70px}
+    .logo{display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.4px}
+    .logo-mark{width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--brand),#020617); display:grid; place-items:center; font-size:14px}
+    .navlinks{display:flex; gap:22px; align-items:center}
+    .menu-btn{display:none}
+
+    /* Hero image */
+    .hero-img {
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      margin-top: -250px;
+      margin-right: -300px;
+    }
+    .hero-img img {
+      max-width: 100%;
+      width: 200px;
+      border-radius: 20px;
+      border: 2px solid var(--stroke);
+      object-fit: cover;
+    }
+
+    /* Hero */
+    .hero{padding:72px 0 40px}
+    .hero-grid{display:grid; grid-template-columns:1.9fr .9fr; gap:40px; align-items:center}
+    .title{font-size:44px; line-height:1.08; margin:12px 0 10px; font-weight:800}
+    .subtitle{color:var(--muted); font-size:18px; max-width:64ch}
+    .actions{margin-top:28px; display:flex; gap:14px; flex-wrap:wrap}
+    .hero-card{background:radial-gradient(1200px 600px at 20% -20%, rgba(29,78,216,.25), transparent 60%), var(--card); border:1px solid var(--stroke); border-radius:20px; padding:20px; display:flex; gap:18px; align-items:center}
+    .hero-card img{width:72px; height:72px; border-radius:14px; object-fit:cover; border:1px solid var(--stroke)}
+
+    /* Sections */
+    section{padding:64px 0; border-top:1px solid var(--stroke)}
+    h2{font-size:28px; margin:0 0 10px}
+    p.lead{color:var(--muted); max-width:70ch}
+
+    /* Cards grid */
+    .grid{display:grid; gap:18px}
+    .grid.cards{grid-template-columns:repeat(12,1fr)}
+    .card{grid-column:span 4; background:var(--card); border:1px solid var(--stroke); border-radius:18px; padding:18px}
+    .card h3{margin:6px 0 6px; font-size:18px}
+    .card p{color:var(--muted); font-size:14px}
+
+    /* Experience */
+    .timeline{display:grid; gap:16px; margin-top:12px}
+    .item{background:var(--card); border:1px solid var(--stroke); border-radius:16px; padding:16px}
+    .item .when{font-size:12px; color:var(--muted)}
+
+    /* Footer */
+    footer{border-top:1px solid var(--stroke); padding:28px 0 60px; color:var(--muted)}
+
+    /* Cursos - Estilos específicos */
+    .category-section {
+      margin-bottom: 3rem;
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: 18px;
+      padding: 24px;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--stroke);
+    }
+
+    .category-icon {
+      width: 40px;
+      height: 40px;
+      margin-right: 1rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      background: var(--brand);
+    }
+
+    .category-title {
+      font-size: 1.5rem;
+      color: var(--txt);
+      margin: 0;
+      margin-right: 1rem;
+    }
+
+    .course-count {
+      background: var(--brand);
+      color: white;
+      padding: 0.3rem 0.8rem;
+      border-radius: 16px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .card.course-card {
+      background: var(--bg);
+      border: 1px solid var(--stroke);
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: all 0.3s ease;
+    }
+
+    .card.course-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--brand);
+      box-shadow: 0 8px 25px rgba(29, 78, 216, 0.15);
+    }
+
+    .card.course-card h3 {
+      color: var(--txt);
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .card.course-card p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    .card.course-card strong {
+      color: var(--brand-2);
+      font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .hero-grid{grid-template-columns:1fr;}
+      .title{font-size:36px}
+      .navlinks{display:none}
+      .menu-btn{display:inline-flex}
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 640px){
+      .card{grid-column:span 12}
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+      .category-header {
+        flex-direction: column;
+        text-align: center;
+      }
+      .category-icon {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
+  <header>
     <div class="container">
-        <!-- Header -->
-        <header class="profile-header">
-            <div class="profile-image">
-                <img src="https://via.placeholder.com/150" alt="Marcelo Menezes" id="profile-pic">
-            </div>
-            <h1>Marcelo Menezes</h1>
-            <p class="subtitle">DevOps Engineer | Cloud Architect | Terraform Specialist</p>
-            <div class="social-links">
-                <a href="https://github.com/Mfdemenezes" target="_blank">
-                    <i class="fab fa-github"></i>
-                </a>
-                <a href="https://linkedin.com/in/marcelo-menezes" target="_blank">
-                    <i class="fab fa-linkedin"></i>
-                </a>
-                <a href="mailto:seu.email@exemplo.com">
-                    <i class="fas fa-envelope"></i>
-                </a>
-            </div>
-        </header>
+      <nav aria-label="Principal">
+        <a class="logo" href="#home" aria-label="MBAM - Início">
+          <span class="logo-mark" aria-hidden="true">MB</span>
+          <span>MBAM</span>
+        </a>
 
-        <!-- About Section -->
-        <section class="about">
-            <h2><i class="fas fa-user"></i> Sobre Mim</h2>
-            <p>
-                Especialista em DevOps e Cloud Computing com foco em AWS, Terraform e automação de infraestrutura. 
-                Apaixonado por criar soluções escaláveis e eficientes que transformam a forma como as empresas 
-                gerenciam sua infraestrutura tecnológica.
-            </p>
-        </section>
-
-        <!-- Skills Section -->
-        <section class="skills">
-            <h2><i class="fas fa-code"></i> Tecnologias</h2>
-            <div class="skills-grid">
-                <div class="skill-card">
-                    <i class="fab fa-aws"></i>
-                    <h3>AWS</h3>
-                    <p>EC2, S3, VPC, IAM, Lambda</p>
-                </div>
-                <div class="skill-card">
-                    <i class="fas fa-server"></i>
-                    <h3>Terraform</h3>
-                    <p>Infrastructure as Code</p>
-                </div>
-                <div class="skill-card">
-                    <i class="fab fa-docker"></i>
-                    <h3>Docker</h3>
-                    <p>Containerização e Orquestração</p>
-                </div>
-                <div class="skill-card">
-                    <i class="fab fa-gitlab"></i>
-                    <h3>CI/CD</h3>
-                    <p>GitLab, GitHub Actions</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Projects Section -->
-        <section class="projects">
-            <h2><i class="fas fa-project-diagram"></i> Projetos</h2>
-            <div class="project-card">
-                <h3>🏗️ Infraestrutura AWS com Terraform</h3>
-                <p>Automação completa de infraestrutura AWS usando Terraform com CI/CD integrado.</p>
-                <div class="project-tech">
-                    <span>Terraform</span>
-                    <span>AWS</span>
-                    <span>GitLab CI/CD</span>
-                </div>
-            </div>
-            <div class="project-card">
-                <h3>🔧 Pipeline de Deploy Automatizado</h3>
-                <p>Sistema de deploy automatizado com containers Docker e N8N para automações.</p>
-                <div class="project-tech">
-                    <span>Docker</span>
-                    <span>N8N</span>
-                    <span>Nginx</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Contact Section -->
-        <section class="contact">
-            <h2><i class="fas fa-envelope"></i> Contato</h2>
-            <div class="contact-info">
-                <a href="mailto:seu.email@exemplo.com" class="contact-item">
-                    <i class="fas fa-envelope"></i>
-                    seu.email@exemplo.com
-                </a>
-                <a href="https://github.com/Mfdemenezes" class="contact-item" target="_blank">
-                    <i class="fab fa-github"></i>
-                    GitHub
-                </a>
-                <a href="https://linkedin.com/in/marcelo-menezes" class="contact-item" target="_blank">
-                    <i class="fab fa-linkedin"></i>
-                    LinkedIn
-                </a>
-            </div>
-        </section>
-
-        <!-- Footer -->
-        <footer>
-            <p>&copy; 2025 Marcelo Menezes. Feito com ❤️ e Terraform.</p>
-            <p class="update-info">Última atualização: <span id="last-update"></span></p>
-        </footer>
+        <button class="menu-btn btn outline" aria-controls="menu" aria-expanded="false" onclick="toggleMenu()">Menu</button>
+        <div id="menu" class="navlinks" role="navigation">
+          <a href="#sobre">Sobre</a>
+          <a href="#formacao">Formação</a>
+          <a href="#curso">Cursos</a>
+          <a href="#experiencia">Experiência</a>
+          <a href="#artigos">Artigos</a>
+          <a href="#contato" class="btn">Contato</a>
+        </div>
+      </nav>
     </div>
+  </header>
 
-    <script src="js/script.js"></script>
+  <main id="home" class="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div>
+          <span class="badge">• Zootecnia • Agro • Tecnologia • Cloud AWS • DevOps • </span>
+          <h1 class="title">Marcelo Ferreira de Menezes</h1>
+          <p class="subtitle">Profissional com atuação em <strong>Zootecnia</strong>, gestão e <strong>consultoria agropecuária sustentável</strong>. Experiência prática em nutrição e reprodução animal, otimização de processos e transformação digital no campo. Em estudo para certificações e preparação para o mercado de tecnologia e me especializando em infraestrutura, <strong>DevOps e Cloud Computing (AWS)</strong>.</p>
+          <div class="actions">
+            <a class="btn" href="#contato">Fale comigo</a>
+            <a class="btn" href="#curso">Ver cursos</a>
+            <a class="btn" href="Curriculo_Portugues.pdf" target="_blank">Ver currículo<br>Portugues</a>
+            <a class="btn" href="Curriculo_English.pdf" target="_blank">Ver currículo<br>Inglês</a>
+          </div>
+
+          <!-- Coluna da direita com a imagem -->
+          <div class="hero-img">
+            <img src="foto_capa.png" alt="Foto de Marcelo Ferreira de Menezes">
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <section id="sobre">
+    <div class="container">
+      <h2>Sobre mim</h2>
+      <p class="lead">Sou formado em Zootecnia, vivi e gerenciei operações de fazenda por anos e hoje estou focado em <strong>soluções em nuvem na AWS</strong> aplicadas ao agronegócio, produtividade e sustentabilidade. Busco unir conhecimento técnico do campo com tecnologia para gerar impacto real.</p>
+    </div>
+  </section>
+
+  <section id="formacao"> 
+    <div class="container"> 
+      <h2>Formação acadêmica</h2> 
+      <div class="timeline"> 
+        <div class="item"> 
+          <div class="when">2010</div>
+          <h1>Bacharelado em Zootecnia</h1> 
+          <p class="lead">Formação superior voltada para o planejamento, manejo e otimização da produção animal, com enfoque em sustentabilidade e eficiência produtiva. As principais áreas de estudo incluíram:</p>
+          <li><strong>Planejamento e Manejo da Produção Animal</strong></li>
+          <p class="lead">Definição de estratégias de criação, alimentação, reprodução e sanidade para maximizar produtividade e qualidade dos produtos de origem animal.</p>
+        
+          <li><strong>Nutrição e Alimentação</strong></li>
+          <p class="lead">Formulação de dietas balanceadas, gestão de suplementos e avaliação do consumo e desempenho animal, considerando custo-benefício e impacto ambiental.</p>
+          
+          <li><strong>Reprodução e Melhoramento Genético</strong></li>
+          <p class="lead">Seleção de reprodutores, aplicação de biotecnologias como inseminação artificial e transferência de embriões, e implementação de programas de melhoramento.</p>
+          
+          <li><strong>Sanidade e Bem-Estar Animal</strong></li>
+          <p class="lead">Prevenção e controle de doenças, monitoramento de indicadores de saúde e aplicação de práticas que promovam conforto e comportamento natural dos animais.</p>
+          
+          <li><strong>Manejo de Pastagens e Recursos Forrageiros</strong></li>
+          <p class="lead">Planejamento de pastagens, rotação de piquetes, conservação de forragens e integração lavoura-pecuária-floresta.</p>
+          
+          <li><strong>Tecnologia e Processamento</strong></li>
+          <p class="lead">Acompanhamento de processos de produção e industrialização de carne, leite, ovos, mel e outros produtos, garantindo qualidade e segurança alimentar.</p>
+          
+          <li><strong>Gestão e Economia Rural</strong></li>
+          <p class="lead">Análise de viabilidade econômica, gestão administrativa e de pessoal, além de elaboração e acompanhamento de projetos agropecuários.</p>
+          
+          <li><strong>Pesquisa e Extensão</strong></li>
+          <p class="lead">Desenvolvimento de estudos técnicos, participação em pesquisas científicas e disseminação de conhecimento para produtores e comunidades.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="curso"> 
+    <div class="container">
+      <h2>Cursos e Certificações</h2>
+      <p class="lead">Relação de todos os cursos organizados por área de conhecimento</p>
+
+      <!-- Zootecnia -->
+      <div class="category-section">
+        <div class="category-header">
+          <div class="category-icon">🐄</div>
+          <h3 class="category-title">Zootecnia</h3>
+          <span class="course-count">11 cursos</span>
+        </div>
+        <div class="cards-grid">
+          <article class="card course-card">
+            <h3>Universidade de Illinois em Urbana-Champaign</h3>
+            <p><strong>Produção sustentável de alimentos por meio do manejo da saúde do gado</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>Universidade Estadual da Pensilvânia (EUA)</h3>
+            <p><strong>Produção e Gestão de Laticínios</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>CRV Lagoa — Lagoa da Serra</h3>
+            <p><strong>Transforme Sua Fazenda em Empresa: Gestão, Liderança e Tecnologia</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>ACAMPAR — Assoc. Apicultores do Médio Paraíba e Baixada Fluminense</h3>
+            <p><strong>Curso de Meliponicultura — 4ª Festa do Mel</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>CRV Lagoa — Lagoa da Serra</h3>
+            <p><strong>Curso Prático de Inseminação Artificial</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>Sociedade Brasileira de Zootecnia (SBZ)</h3>
+            <p><strong>2º Workshop de Forragem</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>Prefeitura de Paty dos Alferes — RJ</h3>
+            <p><strong>4º Festival do Mel</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>Agronegócio do Rio de Janeiro</h3>
+            <p><strong>4º Agronegócio do Rio de Janeiro</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>O Futuro do Agronegócio na "Nova Economia"</h3>
+            <p><strong>3º Agri Business Internet — E-Commerce B2B</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>Associação Brasileira de Zootecnia (ABZ)</h3>
+            <p><strong>ZOOTEC 2001 — XI CBZ & III Congresso Internacional</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>Universidade Castelo Branco</h3>
+            <p><strong>III Semana de Medicina Veterinária</strong></p>
+          </article>
+        </div>
+      </div>
+
+      <!-- Tecnologia -->
+      <div class="category-section">
+        <div class="category-header">
+          <div class="category-icon">💻</div>
+          <h3 class="category-title">Tecnologia</h3>
+          <span class="course-count">4 cursos</span>
+        </div>
+        <div class="cards-grid">
+          <article class="card course-card">
+            <h3>Amazon Web Services</h3>
+            <p><strong>AWS Certified Cloud Practitioner (CLF-C02)</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>Curso Especializado</h3>
+            <p><strong>Docker de Zero a Avançado</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>Controle de Versão</h3>
+            <p><strong>Git e GitHub</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>Programação</h3>
+            <p><strong>Python — completo: zero a avançado + projetos reais (2025)</strong></p>
+          </article>
+        </div>
+      </div>
+
+      <!-- Queijaria -->
+      <div class="category-section">
+        <div class="category-header">
+          <div class="category-icon">🧀</div>
+          <h3 class="category-title">Queijaria</h3>
+          <span class="course-count">1 curso</span>
+        </div>
+        <div class="cards-grid">
+          <article class="card course-card">
+            <h3>Escola de Laticínios Docina Nutrição</h3>
+            <p><strong>Curso de Queijo Artesanal</strong></p>
+          </article>
+        </div>
+      </div>
+
+      <!-- Charcutaria -->
+      <div class="category-section">
+        <div class="category-header">
+          <div class="category-icon">🥩</div>
+          <h3 class="category-title">Charcutaria</h3>
+          <span class="course-count">4 cursos</span>
+        </div>
+        <div class="cards-grid">
+          <article class="card course-card">
+            <h3>Curata — Escola de Charcutaria (Instrutor: Navarro)</h3>
+            <p><strong>Curso Intensivo de Charcutaria Artesanal</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>A Cava — Escola de Charcutaria (Instrutor: Peterson)</h3>
+            <p><strong>Salsichas Artesanais 2.0</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>Dos Pés à Cabeça — Chef André Vitaliano</h3>
+            <p><strong>Enchidos Artesanais Frescos e Defumados</strong></p>
+          </article>
+          <article class="card course-card">
+            <h3>Dos Pés à Cabeça — Chef André Vitaliano</h3>
+            <p><strong>Preparações de Carne de Porco Crocante</strong></p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="experiencia">
+    <div class="container">
+      <h2>Experiência selecionada</h2>
+      <div class="timeline">
+        <div class="item">
+          <div class="when">1997–1999</div>
+          <strong>Meridional Câmbio, Viagem e Turismo – Assistente Administrativo (1997 – 1999)</strong>
+          <p class="lead">Atendimento ao cliente, emissão de passagens e reservas de hospedagem.</p>
+          <p class="lead">Apoio no setor financeiro, controle de caixa e conciliação bancária.</p>
+          <p class="lead">Suporte às operações de câmbio e documentação de viagens internacionais.</p>
+        </div>
+        <div class="item">
+          <div class="when">1999–2002</div>
+          <strong>Routetur – Agência de Turismo – Sócio Proprietário (1999 – 2002)</strong>
+          <p class="lead">Estruturação e gestão de agência de turismo com foco em viagens nacionais e internacionais.</p>
+          <p class="lead">Negociação com fornecedores e criação de pacotes personalizados para diferentes públicos.</p>
+          <p class="lead">Gestão administrativa e financeira da empresa.</p>
+        </div>
+        <div class="item">
+          <div class="when">+19 anos</div>
+          <strong>Fazenda Recreio do Paraíso – Proprietário e Gestor Agropecuário (2003 – 2022)</strong>
+          <p class="lead">Administração geral de propriedade rural localizada em Piraí–RJ, com foco em sistemas sustentáveis de produção animal.</p>
+          <p class="lead">Implantação e manejo de sistemas de pastagem rotacionada e integração lavoura-pecuária-floresta (ILPF), visando aumento da produtividade e preservação ambiental.</p>
+          <p class="lead">Gestão de rebanho de gado de corte e leiteiro, incluindo manejo nutricional, reprodutivo e sanitário.</p>
+          <p class="lead">Desenvolvimento e aplicação de protocolos de reprodução assistida para melhoria genética do rebanho.</p>
+          <p class="lead">Gestão de equipe, controle de custos e planejamento estratégico para expansão das atividades.</p>
+          <p class="lead">Parcerias com fornecedores e clientes para comercialização de carne e leite de alta qualidade.</p>
+        </div>
+        <div class="item">
+          <div class="when">2008–2018</div>
+          <strong>Hotel Fazenda Recreio do Paraíso (2008 – 2018)</strong>
+          <p class="lead">Coordenação e gestão de um hotel fazenda integrado à atividade agropecuária, unindo turismo rural e produção sustentável.</p>
+          <p class="lead">Planejamento e execução de eventos corporativos, religiosos e familiares, como retiros, encontros e convenções.</p>
+          <p class="lead">Implementação de práticas de hospitalidade e atendimento ao cliente que elevaram o índice de satisfação e fidelização.</p>
+          <p class="lead">Desenvolvimento de pacotes turísticos integrando hospedagem, gastronomia e experiências rurais.</p>
+          <p class="lead">Gestão de equipe multidisciplinar (hotelaria, gastronomia, agro-turismo, manutenção e lazer).</p>
+        </div>
+        <div class="item">
+          <div class="when">2022–2023</div>
+          <strong>Du Xico Embutidos e Defumados (2022–2023)</strong>
+          <p class="lead">Reestruturação de processos produtivos visando eficiência, qualidade e segurança alimentar.</p>
+          <p class="lead">Criação de novos produtos e adequação de receitas para atender demandas de mercado, como embutidos frescos e defumados, salames, pastramis, mortadelas, bacon e peças defumadas como lombo, costela e pernil, além do joelho defumado (Eisbein).</p>
+          <p class="lead">Treinamento e capacitação de funcionários em boas práticas de fabricação e atendimento ao cliente.</p>
+          <p class="lead">Desenvolvimento de estratégias de marketing e expansão para novos pontos de venda.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="artigos">
+    <div class="container">
+      <h2>Artigos &amp; Publicações</h2>
+      <p class="lead">Conteúdo técnico e opiniões publicados no LinkedIn.</p>
+      <div class="grid cards" style="margin-top:16px">
+        <article class="card" aria-label="Artigo no LinkedIn">
+          <h3>Pastagem Rotacionada e Integração Lavoura-Pecuária-Floresta (ILPF): O futuro da Agropecuária Americana está na Produção Regenerativa</h3>
+          <p>Estratégias práticas para produtividade e sustentabilidade. <a href="https://www.linkedin.com/pulse/pastagem-rotacionada-e-integra%25C3%25A7%25C3%25A3o-ilpf-o-futuro-da-na-marcelo-ku8ve/" target="_blank" aria-label="Ler no LinkedIn">Ler no LinkedIn →</a></p>
+        </article>
+        <article class="card" aria-label="Artigo no LinkedIn">
+          <h3>Charcutaria de Valor Agregado: Quando a Zootecnia Encontra a Identidade Territorial</h3>
+          <p>Primeiros passos para valor com dados no campo. <a href="https://www.linkedin.com/pulse/charcutaria-de-valor-agregado-quando-zootecnia-ferreira-de-menezes-kkjqe/?trackingId=WFV70Dm1Q0GKh4lqGiA%2Fcw%3D%3D" target="_blank">Ler no LinkedIn →</a></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="contato">
+    <div class="container">
+      <h2>Contato</h2>
+      <p class="lead">Prefere falar agora? Envie um e-mail ou mensagem no LinkedIn.</p>
+      <div class="actions" style="margin-top:10px">
+        <a class="btn" href="mailto:mfdemenezes@mbam.com.br">mfdemenezes@mbam.com.br</a>
+        <a class="btn" href="https://www.linkedin.com/in/marcelo-ferreira-de-menezes-b0190233b/" target="_blank" rel="noopener">LinkedIn</a>
+        <a class="btn" href="https://www.instagram.com/marcelomenezes29/" target="_blank" rel="noopener">Instagram</a>
+        <a class="btn" href="https://www.instagram.com/du.xico/" target="_blank" rel="noopener">Instagram Du Xico</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap">
+        <div>© <span id="year"></span> MBAM — Marcelo Ferreira de Menezes</div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+          <div class="badge">Feito para performance (S3 estático)</div>
+          <div class="badge" title="Crédito de autoria">Feito por você</div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.
+  </script>
+
+  <script>
+    // Atualiza o ano automaticamente
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Simples toggle do menu em telas menores
+    function toggleMenu(){
+      const menu = document.getElementById('menu');
+      const isOpen = menu.style.display === 'flex';
+      menu.style.display = isOpen ? 'none' : 'flex';
+    }
+  </script>
 </body>
 </html>

@@ -1,0 +1,310 @@
+# ===============================================
+# GitHub Actions - Infraestrutura + Website
+# ===============================================
+
+name: Terraform Infrastructure Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+        - plan
+        - apply
+        - destroy
+
+env:
+  TF_VERSION: "1.8.5"
+  AWS_DEFAULT_REGION: "us-east-1"
+  S3_BUCKET: "mfdemenezes-terraform-bucket"
+
+jobs:
+  # ===============================================
+  # TERRAFORM VALIDATE & PLAN
+  # ===============================================
+  terraform-plan:
+    name: 'Terraform Plan'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: .
+    
+    outputs:
+      plan-status: ${{ steps.plan.outputs.exitcode }}
+      
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+        
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_DEFAULT_REGION }}
+        
+    - name: Verify AWS Connection
+      run: |
+        echo "🔍 Verificando conexão AWS..."
+        aws sts get-caller-identity
+        
+    - name: Terraform Init
+      id: init
+      run: |
+        echo "🚀 Inicializando Terraform..."
+        terraform init -reconfigure
+        
+    - name: Terraform Format Check
+      id: fmt
+      run: |
+        echo "📝 Verificando formatação..."
+        terraform fmt -check -recursive
+        
+    - name: Terraform Validate
+      id: validate
+      run: |
+        echo "✅ Validando configuração..."
+        terraform validate
+        
+    - name: Terraform Plan
+      id: plan
+      run: |
+        echo "📋 Gerando plano de execução..."
+        terraform plan -detailed-exitcode -out=tfplan
+      continue-on-error: true
+      
+    - name: Upload Plan Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: terraform-plan
+        path: |
+          tfplan
+          .terraform.lock.hcl
+        retention-days: 5
+
+  # ===============================================
+  # TERRAFORM APPLY (INFRASTRUCTURE)
+  # ===============================================
+  terraform-apply:
+    name: 'Deploy Infrastructure'
+    runs-on: ubuntu-latest
+    needs: terraform-plan
+    if: |
+      (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
+      (github.event_name == 'workflow_dispatch' && inputs.action == 'apply')
+    environment: 
+      name: ${{ github.ref_name }}
+      url: https://console.aws.amazon.com/ec2/v2/home?region=us-east-1
+      
+    defaults:
+      run:
+        shell: bash
+        working-directory: .
+        
+    outputs:
+      instance-ip: ${{ steps.outputs.outputs.instance-ip }}
+      
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+        terraform_wrapper: false
+        
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_DEFAULT_REGION }}
+        
+    - name: Download Plan Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: terraform-plan
+        
+    - name: Terraform Init
+      run: |
+        echo "🚀 Inicializando Terraform..."
+        terraform init -reconfigure
+        
+    - name: Terraform Apply
+      id: apply
+      run: |
+        echo "🏗️  Criando infraestrutura..."
+        terraform apply -auto-approve tfplan
+        echo "✅ Infraestrutura criada com sucesso!"
+        
+    - name: Get Terraform Outputs
+      id: outputs
+      run: |
+        echo "📤 Coletando outputs..."
+        terraform output -json > infrastructure-outputs.json
+        
+        # Extract instance IP for next jobs
+        if command -v jq &> /dev/null; then
+          INSTANCE_IP=$(terraform output -raw instance_public_ip 2>/dev/null || echo "")
+          echo "instance-ip=$INSTANCE_IP" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Upload Infrastructure Outputs
+      uses: actions/upload-artifact@v4
+      with:
+        name: infrastructure-outputs
+        path: infrastructure-outputs.json
+        retention-days: 30
+
+  # ===============================================
+  # DEPLOY WEBSITE TO S3
+  # ===============================================
+  deploy-website:
+    name: 'Deploy Website'
+    runs-on: ubuntu-latest
+    needs: terraform-apply
+    if: success()
+    environment: 
+      name: website-${{ github.ref_name }}
+      
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_DEFAULT_REGION }}
+        
+    - name: Deploy Website to S3
+      run: |
+        echo "📁 Fazendo upload do website para S3..."
+        
+        # Upload website files
+        aws s3 sync website/ s3://${{ env.S3_BUCKET }}/website/ --delete
+        
+        # Upload docker-compose.yml
+        aws s3 cp docker-compose.yml s3://${{ env.S3_BUCKET }}/docker-compose.yml
+        
+        # Upload user_data.sh
+        aws s3 cp user_data.sh s3://${{ env.S3_BUCKET }}/user_data.sh
+        
+        echo "✅ Website atualizado no S3!"
+
+  # ===============================================
+  # UPDATE CONTAINERS
+  # ===============================================
+  update-containers:
+    name: 'Update Containers'
+    runs-on: ubuntu-latest
+    needs: [terraform-apply, deploy-website]
+    if: success()
+    environment: 
+      name: containers-${{ github.ref_name }}
+      
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_DEFAULT_REGION }}
+        
+    - name: Download Infrastructure Outputs
+      uses: actions/download-artifact@v4
+      with:
+        name: infrastructure-outputs
+        
+    - name: Update Containers
+      run: |
+        echo "🔄 Atualizando containers na EC2..."
+        
+        # Read outputs
+        if [ -f infrastructure-outputs.json ]; then
+          echo "📊 Outputs da infraestrutura:"
+          cat infrastructure-outputs.json
+          
+          # Extract instance IP
+          INSTANCE_IP="${{ needs.terraform-apply.outputs.instance-ip }}"
+          
+          if [ ! -z "$INSTANCE_IP" ]; then
+            echo "🌐 Instance IP: $INSTANCE_IP"
+            
+            echo "🔧 Para conectar via SSM e atualizar containers:"
+            echo "aws ssm start-session --target \$(aws ec2 describe-instances --filters \"Name=ip-address,Values=$INSTANCE_IP\" --query 'Reservations[0].Instances[0].InstanceId' --output text)"
+            echo "cd /home/ec2-user/app"
+            echo "docker-compose down"
+            echo "aws s3 sync s3://${{ env.S3_BUCKET }}/website/ ./nginx/html/"
+            echo "docker-compose up -d"
+          else
+            echo "⚠️  IP da instância não encontrado"
+          fi
+        else
+          echo "⚠️  Arquivo de outputs não encontrado"
+        fi
+        
+        echo "✅ Instruções de atualização geradas!"
+
+  # ===============================================
+  # TERRAFORM DESTROY (MANUAL)
+  # ===============================================
+  terraform-destroy:
+    name: 'Destroy Infrastructure'
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'destroy'
+    environment: 
+      name: destroy-${{ github.ref_name }}
+      
+    defaults:
+      run:
+        shell: bash
+        working-directory: .
+        
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+        
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_DEFAULT_REGION }}
+        
+    - name: Terraform Init
+      run: |
+        echo "🚀 Inicializando Terraform..."
+        terraform init -reconfigure
+        
+    - name: Terraform Destroy
+      run: |
+        echo "🚨 DESTRUINDO INFRAESTRUTURA!"
+        echo "Esta ação é IRREVERSÍVEL!"
+        sleep 5
+        terraform destroy -auto-approve
+        echo "💥 Infraestrutura destruída!"
