@@ -19,7 +19,7 @@ services:
       apk add --no-cache openssl &&
       mkdir -p /etc/ssl/certs /etc/ssl/private &&
       openssl genrsa -out /etc/ssl/private/nginx-selfsigned.key 2048 &&
-      openssl req -new -x509 -key /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -days 365 -subj '/C=BR/ST=SP/L=SaoPaulo/O=MeuSite/CN=98.87.200.120' &&
+      openssl req -new -x509 -key /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -days 365 -subj '/C=BR/ST=SP/L=SaoPaulo/O=MeuSite/CN=54.227.12.246' &&
       openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048 &&
       chmod 600 /etc/ssl/private/nginx-selfsigned.key &&
       chmod 644 /etc/ssl/certs/nginx-selfsigned.crt &&
@@ -43,9 +43,9 @@ services:
       - N8N_PROTOCOL=https
       - N8N_SECURE_COOKIE=true
       - NODE_ENV=production
-      - WEBHOOK_URL=https://98.87.200.120/n8n/
+      - WEBHOOK_URL=https://54.227.12.246/n8n/
       - GENERIC_TIMEZONE=America/Sao_Paulo
-      - N8N_EDITOR_BASE_URL=https://98.87.200.120/n8n/
+      - N8N_EDITOR_BASE_URL=https://54.227.12.246/n8n/
       - N8N_PATH=/n8n/
     restart: unless-stopped
     networks:
