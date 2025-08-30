@@ -216,7 +216,8 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 # S3 Bucket for Website and Files
 # ===============================================
 resource "aws_s3_bucket" "website" {
-  bucket = var.s3_bucket_name
+  bucket        = var.s3_bucket_name
+  force_destroy = true
 
   tags = {
     Name = "${var.project_name}-bucket"

@@ -1,0 +1,68 @@
+{
+    "Deleted": [
+        {
+            "Key": "website/index.html",
+            "VersionId": "UqKiDtyg_DN7vlx4d_ijGM5lQaeq.lxE"
+        },
+        {
+            "Key": "website/Curriculo_Portugues.pdf",
+            "VersionId": "4OQffCYtHvMi8QakXqEhRz0sot3dB9GH"
+        },
+        {
+            "Key": "docker-compose.yml",
+            "VersionId": "HkHVjy3OEUIayudze9p7p_gaZZsBbALV"
+        },
+        {
+            "Key": "website/Dockerfile",
+            "VersionId": "PW29jBfah4.ksUXSjArT7cYIr3bfLrSz"
+        },
+        {
+            "Key": "website/Curriculo_English.pdf",
+            "VersionId": "c6CFbN1Cr6rpOv.fB8t7YPkf8UqDI7vH"
+        },
+        {
+            "Key": "docker-compose.yml",
+            "VersionId": "gy6V5jZ2BhYXTcm_hZ0MLQCq2t8fs2O."
+        },
+        {
+            "Key": "user_data.sh",
+            "VersionId": "EYFkCF.24b_XucB3An4_sIWS2swOVoi6"
+        },
+        {
+            "Key": "docker-compose.yml",
+            "VersionId": "6tfpT9n6XstmcpiJd.2vrAIquPdU42p3"
+        },
+        {
+            "Key": "user_data.sh",
+            "VersionId": "uck_xqvkesoFcq1ZJ8lAyIjWCsbtauDf"
+        },
+        {
+            "Key": "docker-compose.yml",
+            "VersionId": "bz2cofVv1OjmOvqaos7.N5LBbVzS837F"
+        },
+        {
+            "Key": "user_data.sh",
+            "VersionId": "5CVdyRhgSVyMADJiYdS3E6plnw6qxtGY"
+        },
+        {
+            "Key": "website/generate-ssl.sh",
+            "VersionId": "86K0fpPFLPym5KZPcFLsanceLfHWHtYk"
+        },
+        {
+            "Key": "website/foto_capa.png",
+            "VersionId": "aAjXKod1hhb6wPy6WWh62Ue8VoIAm.3J"
+        },
+        {
+            "Key": "website/nginx/default.conf",
+            "VersionId": "pWHq16KYILvBYK1Uag6PuuOXXV_5Uy7a"
+        },
+        {
+            "Key": "website/REDME.md",
+            "VersionId": "Bm3X8s7kZJXbR1prz38mUwnCBxuLSNOn"
+        },
+        {
+            "Key": "docker-compose.yml",
+            "VersionId": "fY6NZzWqmvNGmja9Rmc5BI89oSP0Hvvr"
+        }
+    ]
+}
