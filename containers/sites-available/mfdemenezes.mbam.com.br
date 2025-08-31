@@ -1,0 +1,17 @@
+server {
+    listen 80;
+    server_name mfdemenezes.mbam.com.br;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name mfdemenezes.mbam.com.br;
+
+    ssl_certificate     /etc/letsencrypt/live/mfdemenezes.mbam.com.br/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/mfdemenezes.mbam.com.br/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+    }
+}
