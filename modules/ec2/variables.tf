@@ -65,3 +65,9 @@ variable "enable_ssm" {
   type        = bool
   default     = true
 }
+
+variable "s3_bucket_name" {
+  description = "Nome do bucket S3 para baixar arquivos de configuração"
+  type        = string
+  default     = ""
+}

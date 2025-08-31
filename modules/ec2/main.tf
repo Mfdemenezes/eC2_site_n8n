@@ -33,7 +33,8 @@ resource "aws_instance" "instance" {
   }
   # User data script personalizado ou padrão
   user_data = var.user_data != "" ? var.user_data : templatefile("${path.module}/user_data.sh", {
-    project_name = var.project_name
+    project_name    = var.project_name
+    s3_bucket_name  = var.s3_bucket_name
   })
   # Tags para a instância EC2
   tags = {
