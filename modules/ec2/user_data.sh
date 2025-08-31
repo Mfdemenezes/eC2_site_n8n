@@ -63,19 +63,32 @@ sudo mkdir -p {n8n,website}
 if [ ! -f "/opt/app/n8n/Dockerfile" ]; then
     echo "📦 Criando Dockerfile padrão do N8N..."
     sudo tee /opt/app/n8n/Dockerfile > /dev/null << 'EOF'
+# Dockerfile para N8N - versão mais simples e confiável
+sudo tee /opt/app/n8n/Dockerfile > /dev/null << 'EOF'
 FROM n8nio/n8n:latest
-USER root
-RUN apk add --no-cache curl
-USER node
+
+# Configurar ambiente
 ENV N8N_BASIC_AUTH_ACTIVE=true
 ENV N8N_BASIC_AUTH_USER=admin
-ENV N8N_BASIC_AUTH_PASSWORD=adminpass123
-ENV N8N_PATH=/n8n
+ENV N8N_BASIC_AUTH_PASSWORD=admin123
+ENV N8N_HOST=0.0.0.0
 ENV N8N_PORT=5678
 ENV DB_TYPE=sqlite
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s CMD curl -f http://localhost:5678/healthz || exit 1
+ENV N8N_SECURE_COOKIE=false
+
+# Volume para dados
+VOLUME ["/home/node/.n8n"]
+
+# Porta de exposição
 EXPOSE 5678
+
+# Healthcheck simplificado
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 
+  CMD curl -f http://localhost:5678/healthz || exit 1
+
+# Comando de inicialização - deixa o n8n fazer o que sabe
 CMD ["n8n"]
+EOF
 EOF
 fi
 
@@ -150,30 +163,91 @@ EOF
 sudo chown -R ec2-user:ec2-user /opt/app
 sudo chmod -R 755 /opt/app
 
+# Criar script de diagnóstico útil
+sudo tee /opt/debug.sh > /dev/null << 'EOF'
+#!/bin/bash
+echo "🔍 DIAGNÓSTICO RÁPIDO - $(date)"
+echo "================================"
+echo "📊 Status dos containers:"
+docker compose ps -a
+echo ""
+echo "🔄 Últimos logs N8N (20 linhas):"
+docker logs --tail 20 my_instancia-n8n 2>/dev/null || echo "Container N8N não encontrado"
+echo ""
+echo "🌐 Teste conectividade:"
+echo "Website: $(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080)"
+echo "N8N: $(curl -s -o /dev/null -w "%{http_code}" http://localhost:5678)"
+echo ""
+echo "📁 Arquivos website:"
+ls -la /opt/app/website/
+EOF
+
+sudo chmod +x /opt/debug.sh
+
 # Build e execução dos containers
 echo "🔨 Fazendo build dos containers..."
+
+# Parar containers antigos se existirem
+echo "🛑 Parando containers antigos..."
 cd /opt/app
+sudo docker compose down --remove-orphans 2>/dev/null || true
+sudo docker container prune -f 2>/dev/null || true
 
 # Build das imagens
+echo "🔧 Fazendo build das imagens..."
 sudo docker compose build
 
 echo "🚀 Iniciando containers..."
 # Subir os containers
 sudo docker compose up -d
 
-# Verificar status dos containers
-echo "📊 Verificando status dos containers..."
+# Aguardar e verificar status
+echo "⏳ Aguardando containers iniciarem..."
+sleep 15
+
+echo "📊 Status final dos containers:"
+sudo docker compose ps -a
+
+echo "🔍 Logs importantes:"
+echo "--- Website ---"
+sudo docker logs --tail 5 my_instancia-website 2>/dev/null || echo "Website não encontrado"
+echo "--- N8N ---"
+sudo docker logs --tail 10 my_instancia-n8n 2>/dev/null || echo "N8N não encontrado"
+
+echo ""
+echo "✅ Setup completo! Use '/opt/debug.sh' para diagnósticos"
+echo "🌐 Website: http://$(curl -s ifconfig.me):8080"
+echo "🔧 N8N: http://$(curl -s ifconfig.me):5678"
+
+# Aguardar um pouco para os containers iniciarem
+echo "⏳ Aguardando containers iniciarem..."
+sleep 10
+
+# Testar conectividade local
+echo "🔍 Testando conectividade:"
+echo "Website (8080):"
+curl -I http://localhost:8080 || echo "❌ Website não responde"
+echo "N8N (5678):"
+curl -I http://localhost:5678 || echo "❌ N8N não responde"
+
+# Verificar logs se houver problemas
+echo "📋 Status final dos containers:"
 sudo docker compose ps
 
-# Configurar limpeza automática
+# Configurar limpeza automática (se crontab disponível)
 echo "🧹 Configurando limpeza automática..."
-echo "0 2 * * * docker system prune -f" | sudo crontab -
+if command -v crontab &> /dev/null; then
+    echo "0 2 * * * docker system prune -f" | sudo crontab -
+    echo "✅ Limpeza automática configurada"
+else
+    echo "⚠️  crontab não disponível, pulando limpeza automática"
+fi
 
 echo "🎉 Configuração concluída!"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🌐 Website: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):8080"
 echo "⚡ N8N: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):5678"
 echo "🔐 N8N Login: admin / adminpass123"
-echo "🎯 Elastic IP: $(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
+echo "🎯 IP Público: $(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
 echo "📦 S3 Bucket: ${s3_bucket_name}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
