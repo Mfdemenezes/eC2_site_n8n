@@ -1,0 +1,128 @@
+# GitLab CI/CD Pipeline Simples para Terraform AWS
+# Deploy direto da infraestrutura na AWS
+
+image:
+  name: hashicorp/terraform:1.8.5
+  entrypoint:
+    - '/usr/bin/env'
+    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+variables:
+  TF_ROOT: ${CI_PROJECT_DIR}
+  TF_IN_AUTOMATION: "true"
+  TF_CLI_ARGS: "-no-color"
+  AWS_DEFAULT_REGION: "us-east-1"
+
+# Cache para acelerar builds
+cache:
+  key: terraform-cache-$CI_COMMIT_REF_SLUG
+  paths:
+    - .terraform
+    - .terraform.lock.hcl
+    - terraform.tfstate
+    - terraform.tfstate.backup
+
+# Configuração inicial
+before_script:
+  - cd ${TF_ROOT}
+  - echo "Verificando ferramentas..."
+  - terraform --version
+  - which aws || apk add --no-cache aws-cli
+  - echo "Verificando credenciais AWS..."
+  - aws sts get-caller-identity
+  - echo "Inicializando Terraform com reconfiguracao..."
+  - terraform init -reconfigure
+
+stages:
+  - validate
+  - plan
+  - deploy
+
+# Stage 1: Validação
+validate:
+  stage: validate
+  script:
+    - echo "Validando configuracao Terraform..."
+    - terraform fmt -check -recursive
+    - terraform validate
+    - echo "Validacao concluida!"
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+# Stage 2: Plan
+plan:
+  stage: plan
+  script:
+    - echo "Criando plano de execucao..."
+    - terraform plan -out=tfplan
+    - terraform show tfplan
+  artifacts:
+    paths:
+      - tfplan
+      - terraform.tfstate
+      - terraform.tfstate.backup
+    expire_in: 1 day
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+# Stage 3: Deploy automático na main
+deploy-auto:
+  stage: deploy
+  script:
+    - echo "Deploy automatico na branch main..."
+    - terraform apply -auto-approve tfplan
+    - terraform output -json > outputs.json
+    - echo "Deploy concluido!"
+  artifacts:
+    paths:
+      - outputs.json
+      - terraform.tfstate
+      - terraform.tfstate.backup
+    expire_in: 30 days
+  dependencies:
+    - plan
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  environment:
+    name: production
+    url: https://console.aws.amazon.com/ec2/v2/home?region=us-east-1
+
+# Stage 3: Deploy manual em outras branches
+deploy-manual:
+  stage: deploy
+  script:
+    - echo "Deploy manual em branch de desenvolvimento..."
+    - terraform apply -auto-approve tfplan
+    - terraform output -json > outputs.json
+    - echo "Deploy concluido!"
+  artifacts:
+    paths:
+      - outputs.json
+      - terraform.tfstate
+      - terraform.tfstate.backup
+    expire_in: 7 days
+  dependencies:
+    - plan
+  rules:
+    - if: $CI_COMMIT_BRANCH != "main"
+      when: manual
+  environment:
+    name: development
+    url: https://console.aws.amazon.com/ec2/v2/home?region=us-east-1
+
+# Job para destruir infraestrutura (manual)
+destroy:
+  stage: deploy
+  script:
+    - echo "DESTRUINDO INFRAESTRUTURA!"
+    - echo "Esta acao e IRREVERSIVEL!"
+    - sleep 5
+    - terraform destroy -auto-approve
+    - echo "Infraestrutura destruida!"
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      when: manual
+      allow_failure: false
+  environment:
+    name: $CI_COMMIT_REF_SLUG
+    action: stop
