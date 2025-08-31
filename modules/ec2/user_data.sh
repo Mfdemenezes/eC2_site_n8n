@@ -91,9 +91,9 @@ RUN sed -i 's/listen       80;/listen       8080;/' /etc/nginx/conf.d/default.co
 EOF
 fi
 
-# Se não existe index.html, criar um padrão simples
+# Se não existem arquivos do website, criar um index.html básico
 if [ ! -f "/opt/app/website/index.html" ]; then
-    echo "📄 Criando index.html padrão..."
+    echo "📄 Criando index.html básico (website não encontrado no S3)..."
     sudo tee /opt/app/website/index.html > /dev/null << EOF
 <!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>${project_name} - Website</title>
@@ -101,6 +101,8 @@ if [ ! -f "/opt/app/website/index.html" ]; then
 <body><div class="container"><h1>🌐 ${project_name}</h1><p>Website rodando na porta 8080</p>
 <p>🔗 <a href="http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):5678" style="color:white">Acessar N8N (Porta 5678)</a></p></div></body></html>
 EOF
+else
+    echo "✅ Website encontrado - usando arquivos do S3"
 fi
 
 
