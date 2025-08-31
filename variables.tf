@@ -92,18 +92,18 @@ variable "sg_ingress_rules" {
   }))
   default = [
     {
-      from_port   = 80
-      to_port     = 80
+      from_port   = 8080
+      to_port     = 8080
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
-      description = "HTTP"
+      description = "Website"
     },
     {
-      from_port   = 443
-      to_port     = 443
+      from_port   = 5678
+      to_port     = 5678
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
-      description = "HTTPS"
+      description = "N8N"
     },
     {
       from_port   = 22

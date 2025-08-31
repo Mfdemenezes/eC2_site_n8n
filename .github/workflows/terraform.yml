@@ -50,15 +50,34 @@ jobs:
         echo "Verificando credenciais AWS..."
         aws sts get-caller-identity
 
-    # Upload configurations to S3 (if bucket exists)
+    # Upload configurations to S3
     - name: Upload configurations to S3
       run: |
-        if [ -f "./upload-to-s3.sh" ]; then
-          echo "Executando upload para S3..."
-          chmod +x upload-to-s3.sh
-          ./upload-to-s3.sh || echo "Upload falhou, continuando com configuração padrão..."
+        echo "📦 Fazendo upload dos containers para S3..."
+        
+        # Verificar se o bucket state existe e obter nome do bucket
+        BUCKET_NAME=$(aws s3api list-buckets --query 'Buckets[?contains(Name, `terraform-state`)].Name' --output text 2>/dev/null | head -1)
+        
+        if [ -n "$BUCKET_NAME" ]; then
+          echo "✅ Bucket encontrado: $BUCKET_NAME"
+          
+          # Upload diretório website
+          if [ -d "./containers/website" ]; then
+            echo "📁 Uploading website..."
+            aws s3 cp ./containers/website/ s3://$BUCKET_NAME/website/ --recursive --quiet
+            echo "✅ Website uploaded"
+          fi
+          
+          # Upload diretório n8n
+          if [ -d "./containers/n8n" ]; then
+            echo "📁 Uploading n8n..."
+            aws s3 cp ./containers/n8n/ s3://$BUCKET_NAME/n8n/ --recursive --quiet
+            echo "✅ N8N uploaded"
+          fi
+          
+          echo "🎉 Upload concluído!"
         else
-          echo "Script upload-to-s3.sh não encontrado, pulando upload..."
+          echo "⚠️  Bucket não encontrado, continuando com configuração padrão..."
         fi
 
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
@@ -115,14 +134,13 @@ jobs:
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo "📊 Informações da Infraestrutura:"
         if [ -f "outputs.json" ]; then
-          echo "🎯 Elastic IPs:"
-          cat outputs.json | jq -r '.elastic_ips.value[]?' 2>/dev/null || echo "Elastic IPs não encontrados"
+          echo "🎯 IPs das Instâncias:"
+          cat outputs.json | jq -r '.instance_public_ips.value[]?' 2>/dev/null || echo "IPs não encontrados"
           echo "🌐 URLs de acesso:"
-          ELASTIC_IP=$(cat outputs.json | jq -r '.elastic_ips.value[0]?' 2>/dev/null)
-          if [ "$ELASTIC_IP" != "null" ] && [ -n "$ELASTIC_IP" ]; then
-            echo "   Website: http://$ELASTIC_IP"
-            echo "   N8N: http://$ELASTIC_IP/n8n"
-            echo "   Health: http://$ELASTIC_IP/health"
+          PUBLIC_IP=$(cat outputs.json | jq -r '.instance_public_ips.value[0]?' 2>/dev/null)
+          if [ "$PUBLIC_IP" != "null" ] && [ -n "$PUBLIC_IP" ]; then
+            echo "   🌐 Website: http://$PUBLIC_IP:8080"
+            echo "   ⚡ N8N: http://$PUBLIC_IP:5678"
           fi
         fi
         echo "🔐 N8N Login: admin / adminpass123"
