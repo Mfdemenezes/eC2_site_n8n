@@ -1,0 +1,115 @@
+name: '🗑️ Destroy AWS Infrastructure'
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type "DESTROY" to confirm destruction'
+        required: true
+        type: string
+      environment:
+        description: 'Environment to destroy'
+        required: true
+        default: 'Dev'
+        type: choice
+        options:
+          - Dev
+          - Staging
+          - Production
+
+permissions:
+  contents: read
+
+env:
+  TF_VAR_region: "us-east-1"
+  AWS_DEFAULT_REGION: "us-east-1"
+
+jobs:
+  destroy:
+    name: '🗑️ Terraform Destroy'
+    runs-on: ubuntu-latest
+    environment: production
+    
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Validation check
+    - name: Validate Confirmation
+      run: |
+        if [ "${{ github.event.inputs.confirmation }}" != "DESTROY" ]; then
+          echo "❌ Confirmação inválida! Digite exatamente 'DESTROY' para confirmar."
+          exit 1
+        fi
+        echo "✅ Confirmação válida para destruição da infraestrutura"
+
+    # Checkout the repository
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Install Terraform
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.8.5"
+
+    # Configure AWS credentials
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    # Verify AWS credentials
+    - name: Verify AWS credentials
+      run: |
+        echo "🔐 Verificando credenciais AWS..."
+        aws sts get-caller-identity
+
+    # Initialize Terraform
+    - name: Terraform Init
+      run: terraform init -reconfigure
+
+    # Show current state
+    - name: Show Current Infrastructure
+      run: |
+        echo "📋 Infraestrutura atual que será destruída:"
+        terraform show || echo "Nenhuma infraestrutura encontrada"
+
+    # Plan destruction
+    - name: Terraform Plan Destroy
+      run: |
+        echo "🗑️ Planejando destruição da infraestrutura..."
+        terraform plan -destroy -input=false -out=destroy-plan
+        echo "📋 Plano de destruição:"
+        terraform show destroy-plan
+
+    # Destroy infrastructure
+    - name: Terraform Destroy
+      run: |
+        echo "💥 INICIANDO DESTRUIÇÃO DA INFRAESTRUTURA..."
+        echo "Environment: ${{ github.event.inputs.environment }}"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        terraform apply -auto-approve destroy-plan
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "✅ Infraestrutura destruída com sucesso!"
+
+    # Verify destruction
+    - name: Verify Destruction
+      run: |
+        echo "🔍 Verificando se todos os recursos foram destruídos..."
+        terraform show || echo "✅ Nenhum recurso encontrado - destruição completa!"
+
+    # Summary
+    - name: Destruction Summary
+      run: |
+        echo "🎯 RESUMO DA DESTRUIÇÃO"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "✅ Infraestrutura AWS destruída com sucesso"
+        echo "🌍 Região: us-east-1"
+        echo "🏷️ Environment: ${{ github.event.inputs.environment }}"
+        echo "⏰ Timestamp: $(date)"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "💡 Para recriar a infraestrutura, execute o workflow 'Deploy'"
